@@ -21,6 +21,9 @@ def part1(input):
     rules = dict(parse(x) for x in rules.split('\n'))
     reg = '^' + regex(0, rules) + '$'
     print(reg)
+    # 0: 8 11
+    # 8: 42 | 42 8
+    # 11: 42 31 | 42 11 31
     reg = re.compile(reg)
     total = sum(1 for x in strings.strip().split('\n') if reg.match(x))
     print(total)

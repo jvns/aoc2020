@@ -68,13 +68,14 @@ class Tile:
             r = rotate(self.edges, i)
             if (te is None or r[0] == te) and (le is None or r[3] == le):
                 orientation = Orientation(i, False)
-                return self.oriented(orientation)
+                print("generating", self.oriented(orientation).orientation)
+                yield self.oriented(orientation)
         for i in range(4):
             r = rotate(self.edges, i)
             r = flip(r)
             if (te is None or r[0] == te) and (le is None or r[3] == le):
                 orientation = Orientation(i, True)
-                return self.oriented(orientation)
+                yield self.oriented(orientation)
 
 def parse_tile(tile):
     lines = tile.strip().split('\n')
@@ -89,12 +90,21 @@ def make_edge2tile(all_tiles):
     return edge2tile
 
 def get_candidates(edge2tile, remaining, top, left):
+    if left is not None:
+        cands = edge2tile[left.right_edge()]
+        try:
+            # thing isn't candidate for itself
+            cands.remove(left.num)
+        except:
+            pass
+        print('get_candidates:', cands)
     return remaining.copy()
 
 def print_placed(placed):
-    print('___')
+    print('___placed___')
     for row in placed:
         print(' '.join([str(x.num) for x in row]))
+    print('____________')
 
 def get_top_left(placed, remaining):
     left = None
@@ -108,7 +118,7 @@ def get_top_left(placed, remaining):
 def placed_len(placed):
     return sum(len(x) for x in placed)
 
-def try_tile(placed, remaining, top, left, tile, width):
+def insert_tile(placed, remaining, tile, oriented_tile, width):
     if placed_len(placed) + len(remaining) != width * width:
         print('########## MISMATCH ######################')
         print_placed(placed)
@@ -118,12 +128,9 @@ def try_tile(placed, remaining, top, left, tile, width):
         assert False
     placed = [x.copy() for x in placed]
     remaining = remaining.copy()
-    # TODO: what if there's more than one way a tile could work?
-    oriented_tiles = tile.works(left, top)
-    if oriented_tile:
-        placed[-1].append(oriented_tile)
-        remaining.remove(tile)
-        return placed, remaining
+    placed[-1].append(oriented_tile)
+    remaining.remove(tile)
+    return placed, remaining
 
 
 def backtrack(edge2tile, placed_init, remaining_init, width=3):
@@ -140,14 +147,15 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
         placed.append([])
     top, left = get_top_left(placed, remaining)
     for tile in get_candidates(edge2tile, remaining, top, left):
-        result = try_tile(placed, remaining, top, left, tile, width)
-        if result:
-            new_placed, new_remaining = result
+        oriented_tiles = list(tile.works(left, top))
+        for oriented_tile in oriented_tiles:
+            new_placed, new_remaining = insert_tile(placed, remaining, tile, oriented_tile, width)
             ret = backtrack(edge2tile, new_placed, new_remaining, width=width)
             if ret is not None:
                 return ret
     # unnecessary but you know
     print('backtracking')
+    print_placed(placed)
     return None
 
 def part1(input):

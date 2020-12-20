@@ -31,7 +31,6 @@ class Tile:
         return Tile(edges, num, Orientation(0, False))
 
     def possible_edges(self):
-        print(self.edges)
         flipped = [str(reversed(x)) for x in self.edges]
         return flipped + list(self.edges)
 

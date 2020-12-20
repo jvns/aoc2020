@@ -1,8 +1,19 @@
 from __future__ import annotations
+import math
 import sys
 from dataclasses import dataclass
 import dataclasses
 from collections import defaultdict
+import numpy as np
+
+
+def np_rotate(tile):
+    rows = np.array([[x for x in line] for line in tile.rows.split('\n')])
+    for _ in range(tile.orientation.rotation):
+        rows = np.rot90(rows, axes=(1,0))
+    if tile.orientation.flipped:
+        rows = np.flip(rows, axis=1)
+    return rows[1:-1,1:-1]
 
 def rotate(edges, n):
     #####
@@ -52,6 +63,7 @@ class Orientation:
 class Tile:
     edges: tuple
     num: int
+    rows: str
     orientation: Orientation
 
     @staticmethod
@@ -61,7 +73,8 @@ class Tile:
         left = ''.join(x[0] for x in rows)
         right = ''.join(x[-1] for x in rows)
         edges = (top, right, bottom, left)
-        return Tile(edges, num, Orientation(0, False))
+        rows = '\n'.join(rows)
+        return Tile(edges, num, rows, Orientation(0, False))
 
     def possible_edges(self):
         flipped = [''.join(reversed(x)) for x in self.edges]
@@ -176,11 +189,24 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
 def part1(input):
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
     edge2tile = make_edge2tile(all_tiles)
-    final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=12)
+    width = round(math.sqrt(len(all_tiles)))
+    final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=width)
     print_placed(final)
     print(final[0][0].num, final[0][-1].num, final[-1][0].num, final[-1][-1].num)
     print(final[0][0].num* final[0][-1].num* final[-1][0].num* final[-1][-1].num)
 
+def part2(input):
+    all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
+    edge2tile = make_edge2tile(all_tiles)
+    width = round(math.sqrt(len(all_tiles)))
+    final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=width)
+    print_placed(final)
+    tile = final[0][0]
+    rows = [np.concatenate([np_rotate(tile) for tile in r], axis=1) for r in final]
+    rows = np.concatenate(rows)
+    print('----')
+    for x in rows:
+        print(''.join(x))
 
 
-part1(sys.stdin.read().strip())
+part2(sys.stdin.read().strip())

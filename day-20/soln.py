@@ -9,7 +9,10 @@ def rotate(tpl, n):
 
 def flip(edges):
     t, r, b, l = edges
-    return (t, str(reversed(r)), b, str(reversed(l)))
+    return (''.join(reversed(t)), r,''.join(reversed(b)), l)
+
+def flippp(edges):
+    return [''.join(reversed(x)) for x in edges]
 
 @dataclass(frozen=True)
 class Orientation:
@@ -20,6 +23,12 @@ class Orientation:
             return f"{self.rotation}f"
         else:
             return f"{self.rotation}"
+
+def orient(edges, orientation):
+    edges = rotate(edges, orientation.rotation)
+    if orientation.flipped:
+        return flip(edges)
+    return edges
 
 @dataclass(frozen=True)
 class Tile:
@@ -41,10 +50,7 @@ class Tile:
         return flipped + list(self.edges)
 
     def oriented_edges(self):
-        edges = rotate(self.edges, self.orientation.rotation)
-        if self.orientation.flipped:
-            edges = flip(edges)
-        return edges
+        return orient(self.edges, self.orientation)
 
     def oriented(self, x):
         return dataclasses.replace(self, orientation=x)
@@ -67,18 +73,18 @@ class Tile:
         # returns a tile
         le = left.right_edge() if left is not None else None
         te = top.bottom_edge() if top is not None else None
-        for i in range(4):
-            # don't need oriented edges here bc by definition it hasn't been
-            # oriented if not placed
-            r = rotate(self.edges, i)
+        if self.num == 3079 and left is not None and left.num == 2311 and top is not None:
+            print ('hiiiiiii')
+            print('top num', top.num)
+            print('left num', left.num)
+            print('top edge', te)
+            print('left edge', le)
+            print(self.edges)
+            print(flippp(self.edges))
+        orientations = [Orientation(i, b) for i in range(4) for b in [True, False]]
+        for orientation in orientations:
+            r = orient(self.edges, orientation)
             if (te is None or r[0] == te) and (le is None or r[3] == le):
-                orientation = Orientation(i, False)
-                yield self.oriented(orientation)
-        for i in range(4):
-            r = rotate(self.edges, i)
-            r = flip(r)
-            if (te is None or r[0] == te) and (le is None or r[3] == le):
-                orientation = Orientation(i, True)
                 yield self.oriented(orientation)
 
 def parse_tile(tile):
@@ -95,9 +101,9 @@ def make_edge2tile(all_tiles):
 
 def get_candidates(edge2tile, remaining, top, left):
     if left is not None:
-        return remaining.intersection(edge2tile[left.right_edge()] - set([left]))
+        return remaining.intersection(edge2tile[left.right_edge()])
     if top is not None:
-        return remaining.intersection(edge2tile[top.bottom_edge()] - set([top]))
+        return remaining.intersection(edge2tile[top.bottom_edge()])
     return remaining.copy()
 
 def print_placed(placed):
@@ -160,6 +166,9 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
 def part1(input):
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
     edge2tile = make_edge2tile(all_tiles)
+    for _, x in edge2tile.items():
+        if len(x) >= 2:
+            print([y.num for y in x])
     final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=3)
     print(len(final))
     for x in final:

@@ -32,12 +32,12 @@ class Tile:
         top = rows[0]
         bottom = rows[-1]
         left = ''.join(x[0] for x in rows)
-        right = ''.join(x[1] for x in rows)
+        right = ''.join(x[-1] for x in rows)
         edges = (top, right, bottom, left)
         return Tile(edges, num, Orientation(0, False))
 
     def possible_edges(self):
-        flipped = [str(reversed(x)) for x in self.edges]
+        flipped = [''.join(reversed(x)) for x in self.edges]
         return flipped + list(self.edges)
 
     def oriented_edges(self):
@@ -90,6 +90,7 @@ def make_edge2tile(all_tiles):
     edge2tile = defaultdict(set)
     for num, tile in all_tiles.items():
         for e in tile.possible_edges():
+            print(e, num)
             edge2tile[e].add(num)
     return edge2tile
 
@@ -165,17 +166,17 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
     return None
 
 def part1(input):
-    import random
-    random.seed(0)
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
     edge2tile = make_edge2tile(all_tiles)
-    for num in all_tiles.keys():
-        pass
+    for _, x in edge2tile.items():
+        if len(x) >= 2:
+            print(x)
+    return
     final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=3)
     print(len(final))
     for x in final:
-        print (list(y.num for y in x))
-    print(final[0][0].num, final[0][-1].num, final[-1][0].num, final[-1][-1].num)
+        print(list(y.num for y in x))
+    # print(final[0][0].num, final[0][-1].num, final[-1][0].num, final[-1][-1].num)
 
     #tile2tile = defaultdict(set)
     #for edge, tiles in edge2tile.items():

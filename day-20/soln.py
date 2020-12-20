@@ -221,12 +221,13 @@ def part2(input):
     """)
 
     print('----')
-    rows = rot(rows, Orientation(3, False))
+    rows = rot(rows, Orientation(3, True))
     for x in rows:
         print(''.join(x))
     print('----')
     print(rows.shape)
     total = 0
+    monsters = []
     for i in range(len(rows)):
         for j in range(len(rows[0])):
             for o in [Orientation(0, False)]:
@@ -238,9 +239,15 @@ def part2(input):
                     count =  np.count_nonzero(mons == rot(rows, o))
                     if count == 15:
                         total += 1
+                        print(o)
+                        monsters.append(mons)
                 except:
                     pass
     print(total)
+    for mons in monsters:
+        rows[rows == mons] = ' '
+    print(np.count_nonzero(rows == '#'))
+
     #print(monster)
 
 

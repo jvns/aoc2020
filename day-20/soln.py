@@ -21,10 +21,22 @@ def rev(x):
 
 def flip(edges):
     t, r, b, l = edges
-    return (rev(t), r, rev(b), l)
+    return (rev(t), l, rev(b), r)
 
 def flippp(edges):
     return [''.join(reversed(x)) for x in edges]
+
+def orient(edges, orientation):
+    edges = rotate(edges, orientation.rotation)
+    if orientation.flipped:
+        return flip(edges)
+    return edges
+
+def all_orientations():
+    return [
+            Orientation(i, b)
+            for i in range(4)
+            for b in [True, False]]
 
 @dataclass(frozen=True)
 class Orientation:
@@ -35,12 +47,6 @@ class Orientation:
             return f"{self.rotation}f"
         else:
             return f"{self.rotation}"
-
-def orient(edges, orientation):
-    edges = rotate(edges, orientation.rotation)
-    if orientation.flipped:
-        return flip(edges)
-    return edges
 
 @dataclass(frozen=True)
 class Tile:
@@ -94,26 +100,23 @@ class Tile:
         # returns a tile
         le = left.right_edge() if left is not None else None
         te = top.bottom_edge() if top is not None else None
-        orientations = [
-                Orientation(i, b)
-                for i in range(4)
-                for b in [True, False]]
-        if self.num == 3079 and left is not None and left.num == 2311 and top is not None:
-            print ('hiiiiiii')
-            print('top num', top.num)
-            print('left num', left.num)
-            print('top edge', te)
-            print('left edge', le)
-            print(self.edges)
-            print(flippp(self.edges))
-            print(top.to_str())
-            print(left.to_str())
-            for orientation in orientations:
-                r = orient(self.edges, orientation)
-                print(r[0] == te, r[-1] == le)
-                print(orientation)
-                print(r)
-                print(self.oriented(orientation).to_str())
+        orientations = all_orientations()
+        #if self.num == 3079 and left is not None and left.num == 2311 and top is not None:
+        #    print ('hiiiiiii')
+        #    print('top num', top.num)
+        #    print('left num', left.num)
+        #    print('top edge', te)
+        #    print('left edge', le)
+        #    print(self.edges)
+        #    print(flippp(self.edges))
+        #    print(top.to_str())
+        #    print(left.to_str())
+        #    for orientation in orientations:
+        #        r = orient(self.edges, orientation)
+        #        print(r[0] == te, r[-1] == le)
+        #        print(orientation)
+        #        print(r)
+        #        print(self.oriented(orientation).to_str())
         for orientation in orientations:
             r = orient(self.edges, orientation)
             if (te is None or r[0] == te) and (le is None or r[-1] == le):
@@ -177,11 +180,11 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
         assert False
     if len(remaining_init) == 0:
         return placed_init
-    print_placed(placed_init)
+    #print_placed(placed_init)
     placed = placed_init.copy()
     remaining = remaining_init.copy()
     if len(placed[-1]) == width:
-        print('adding new row')
+        #print('adding new row')
         placed.append([])
     top, left = get_top_left(placed, remaining)
     for tile in get_candidates(edge2tile, remaining, top, left):
@@ -192,30 +195,16 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
             if ret is not None:
                 return ret
     # unnecessary but you know
-    print('backtracking')
+    #print('backtracking')
     return None
 
 def part1(input):
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
-    print(all_tiles[3079].to_str())
     edge2tile = make_edge2tile(all_tiles)
-    for _, x in edge2tile.items():
-        if len(x) >= 2:
-            print([y.num for y in x])
-    final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=3)
-    print(len(final))
-    for x in final:
-        print(list(y.num for y in x))
-    # print(final[0][0].num, final[0][-1].num, final[-1][0].num, final[-1][-1].num)
-
-    #tile2tile = defaultdict(set)
-    #for edge, tiles in edge2tile.items():
-    #    for t in tiles:
-    #        tile2tile[t] |= tiles
-    #        tile2tile[t].remove(t)
-    #print(len(edge2tile))
-    #for t, adjacent in tile2tile.items():
-    #    print(t, adjacent)
+    final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=12)
+    print_placed(final)
+    print(final[0][0].num, final[0][-1].num, final[-1][0].num, final[-1][-1].num)
+    print(final[0][0].num* final[0][-1].num* final[-1][0].num* final[-1][-1].num)
 
 
 

@@ -101,22 +101,6 @@ class Tile:
         le = left.right_edge() if left is not None else None
         te = top.bottom_edge() if top is not None else None
         orientations = all_orientations()
-        #if self.num == 3079 and left is not None and left.num == 2311 and top is not None:
-        #    print ('hiiiiiii')
-        #    print('top num', top.num)
-        #    print('left num', left.num)
-        #    print('top edge', te)
-        #    print('left edge', le)
-        #    print(self.edges)
-        #    print(flippp(self.edges))
-        #    print(top.to_str())
-        #    print(left.to_str())
-        #    for orientation in orientations:
-        #        r = orient(self.edges, orientation)
-        #        print(r[0] == te, r[-1] == le)
-        #        print(orientation)
-        #        print(r)
-        #        print(self.oriented(orientation).to_str())
         for orientation in orientations:
             r = orient(self.edges, orientation)
             if (te is None or r[0] == te) and (le is None or r[-1] == le):
@@ -160,13 +144,6 @@ def placed_len(placed):
     return sum(len(x) for x in placed)
 
 def insert_tile(placed, remaining, tile, oriented_tile, width):
-    if placed_len(placed) + len(remaining) != width * width:
-        print('########## MISMATCH ######################')
-        print_placed(placed)
-        print('remainings', list(sorted([r.num for r in remaining])))
-        print(len(remaining))
-        print('##########################################')
-        assert False
     placed = [x.copy() for x in placed]
     remaining = remaining.copy()
     placed[-1].append(oriented_tile)
@@ -180,11 +157,9 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
         assert False
     if len(remaining_init) == 0:
         return placed_init
-    #print_placed(placed_init)
     placed = placed_init.copy()
     remaining = remaining_init.copy()
     if len(placed[-1]) == width:
-        #print('adding new row')
         placed.append([])
     top, left = get_top_left(placed, remaining)
     for tile in get_candidates(edge2tile, remaining, top, left):

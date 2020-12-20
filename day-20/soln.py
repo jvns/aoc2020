@@ -93,7 +93,7 @@ def get_candidates(edge2tile, remaining, top, left):
 
 def print_placed(placed):
     for row in placed:
-        print([x.num for x in row])
+        print(' '.join([x.num for x in row]))
 
 def get_top_left(placed, remaining):
     left = None

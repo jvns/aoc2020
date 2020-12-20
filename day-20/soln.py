@@ -15,6 +15,11 @@ def flip(edges):
 class Orientation:
     rotation: int
     flipped: bool
+    def __str__(self):
+        if self.flipped:
+            return f"{self.rotation}f"
+        else:
+            return f"{self.rotation}"
 
 @dataclass(frozen=True)
 class Tile:
@@ -68,7 +73,6 @@ class Tile:
             r = rotate(self.edges, i)
             if (te is None or r[0] == te) and (le is None or r[3] == le):
                 orientation = Orientation(i, False)
-                print("generating", self.oriented(orientation).orientation)
                 yield self.oriented(orientation)
         for i in range(4):
             r = rotate(self.edges, i)
@@ -97,13 +101,15 @@ def get_candidates(edge2tile, remaining, top, left):
             cands.remove(left.num)
         except:
             pass
+        if len(cands) > 2:
+            print(left.right_edge())
         print('get_candidates:', cands)
     return remaining.copy()
 
 def print_placed(placed):
     print('___placed___')
     for row in placed:
-        print(' '.join([str(x.num) for x in row]))
+        print(' '.join([f"{x.num}({x.orientation})" for x in row]))
     print('____________')
 
 def get_top_left(placed, remaining):
@@ -159,6 +165,8 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
     return None
 
 def part1(input):
+    import random
+    random.seed(0)
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
     edge2tile = make_edge2tile(all_tiles)
     for num in all_tiles.keys():

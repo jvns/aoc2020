@@ -9,11 +9,15 @@ import numpy as np
 
 def np_rotate(tile):
     rows = np.array([[x for x in line] for line in tile.rows.split('\n')])
-    for _ in range(tile.orientation.rotation):
+    rows = rows[1:-1,1:-1]
+    return rot(rows, tile.orientation)
+
+def rot(rows, orientation):
+    for _ in range(orientation.rotation):
         rows = np.rot90(rows, axes=(1,0))
-    if tile.orientation.flipped:
+    if orientation.flipped:
         rows = np.flip(rows, axis=1)
-    return rows[1:-1,1:-1]
+    return rows
 
 def rotate(edges, n):
     #####
@@ -195,6 +199,11 @@ def part1(input):
     print(final[0][0].num, final[0][-1].num, final[-1][0].num, final[-1][-1].num)
     print(final[0][0].num* final[0][-1].num* final[-1][0].num* final[-1][-1].num)
 
+def make_array(monster):
+    monster = monster.strip()
+    return np.array([[x for x in line] for line in monster.split('\n')])
+
+
 def part2(input):
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
     edge2tile = make_edge2tile(all_tiles)
@@ -204,9 +213,33 @@ def part2(input):
     tile = final[0][0]
     rows = [np.concatenate([np_rotate(tile) for tile in r], axis=1) for r in final]
     rows = np.concatenate(rows)
+
+    monster = make_array("""
+^^^^^^^^^^^^^^^^^^^#^^^^
+^#^^^^##^^^^##^^^^###^^^
+^^#^^#^^#^^#^^#^^#^^^^^^
+    """)
+
     print('----')
+    rows = rot(rows, Orientation(3, False))
     for x in rows:
         print(''.join(x))
+    print('----')
+    print(rows.shape)
+    for i in range(len(rows)):
+        for j in range(len(rows[0])):
+            for o in all_orientations():
+                rowsss = rot(rows, o)
+                mons = np.full_like(rows, '^')
+                try:
+                    mons[i:i+monster.shape[0],j:j+monster.shape[1]] = monster
+                    count =  np.count_nonzero(mons == rot(rows, o))
+                    if count == 15:
+                        print(count, i, j, o)
+                except:
+                    pass
+    #print(monster)
+
 
 
 part2(sys.stdin.read().strip())

@@ -1,6 +1,7 @@
 from __future__ import annotations
 import sys
 from dataclasses import dataclass
+import dataclasses
 from collections import defaultdict
 
 def rotate(tpl, n):
@@ -15,7 +16,7 @@ class Orientation:
     rotation: int
     flipped: bool
 
-@dataclass
+@dataclass(frozen=True)
 class Tile:
     edges: tuple
     num: int
@@ -42,10 +43,6 @@ class Tile:
 
     def oriented(self, x):
         return dataclasses.replace(self, orientation=x)
-
-    def oriented_edges(self):
-        return oriented_edges(self.edges, self.orientation)
-
 
     def top_edge(self):
         return self.oriented_edges()[0]
@@ -92,37 +89,56 @@ def make_edge2tile(all_tiles):
     return edge2tile
 
 def get_candidates(edge2tile, remaining, top, left):
-    return remaining
+    return remaining.copy()
 
-def backtrack(edge2tile, placed, remaining, width=3):
-    if len(remaining) == 0:
-        return placed
-    placed = placed.copy()
-    remaining = remaining.copy()
-    if len(placed[-1]) == width:
-        left = None
-        placed.append([])
-    else:
+def print_placed(placed):
+    for row in placed:
+        print([x.num for x in row])
+
+def get_top_left(placed, remaining):
+    left = None
+    top = None
+    if len(placed[-1]) > 0:
         left = placed[-1][-1]
-    #####
-    #
     if len(placed) > 1:
         top = placed[-2][len(placed[-1])]
+    return (top, left)
+
+def backtrack(edge2tile, placed_init, remaining_init, width=3):
+    if len(remaining_init) == 0:
+        return placed_init
+    print_placed(placed_init)
+    placed = placed_init.copy()
+    remaining = remaining_init.copy()
+    if len(placed[-1]) == width:
+        print('adding new row')
+        placed.append([])
+    top, left = get_top_left(placed, remaining)
     for tile in get_candidates(edge2tile, remaining, top, left):
+        placed_x = placed.copy()
+        remaining_x = remaining.copy()
         # TODO: what if there's more than one way a tile could work?
         oriented_tile = tile.works(left, top)
         if oriented_tile:
-            placed[-1].add(oriented_tile)
-            remaining.remove(tile)
-            ret =  backtrack(edge2tile, placed, remaining, width=3)
+            placed_x[-1].append(oriented_tile)
+            remaining_x.remove(tile)
+            ret =  backtrack(edge2tile, placed_x, remaining_x, width=3)
             if ret is not None:
                 return ret
+    # unnecessary but you know
+    print('backtracking')
+    return None
 
 def part1(input):
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
     edge2tile = make_edge2tile(all_tiles)
     for num in all_tiles.keys():
         pass
+    final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=3)
+    print(len(final))
+    for x in final:
+        print (list(y.num for y in x))
+    print(final[0][0].num, final[0][-1].num, final[-1][0].num, final[-1][-1].num)
 
     #tile2tile = defaultdict(set)
     #for edge, tiles in edge2tile.items():

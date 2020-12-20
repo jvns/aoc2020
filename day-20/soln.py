@@ -90,21 +90,14 @@ def make_edge2tile(all_tiles):
     edge2tile = defaultdict(set)
     for num, tile in all_tiles.items():
         for e in tile.possible_edges():
-            print(e, num)
-            edge2tile[e].add(num)
+            edge2tile[e].add(tile)
     return edge2tile
 
 def get_candidates(edge2tile, remaining, top, left):
     if left is not None:
-        cands = edge2tile[left.right_edge()]
-        try:
-            # thing isn't candidate for itself
-            cands.remove(left.num)
-        except:
-            pass
-        if len(cands) > 2:
-            print(left.right_edge())
-        print('get_candidates:', cands)
+        return remaining.intersection(edge2tile[left.right_edge()] - set([left]))
+    if top is not None:
+        return remaining.intersection(edge2tile[top.bottom_edge()] - set([top]))
     return remaining.copy()
 
 def print_placed(placed):
@@ -162,7 +155,6 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
                 return ret
     # unnecessary but you know
     print('backtracking')
-    print_placed(placed)
     return None
 
 def part1(input):

@@ -92,8 +92,9 @@ def get_candidates(edge2tile, remaining, top, left):
     return remaining.copy()
 
 def print_placed(placed):
+    print('___')
     for row in placed:
-        print(' '.join([x.num for x in row]))
+        print(' '.join([str(x.num) for x in row]))
 
 def get_top_left(placed, remaining):
     left = None
@@ -104,7 +105,31 @@ def get_top_left(placed, remaining):
         top = placed[-2][len(placed[-1])]
     return (top, left)
 
+def placed_len(placed):
+    return sum(len(x) for x in placed)
+
+def try_tile(placed, remaining, top, left, tile, width):
+    if placed_len(placed) + len(remaining) != width * width:
+        print('########## MISMATCH ######################')
+        print_placed(placed)
+        print('remainings', list(sorted([r.num for r in remaining])))
+        print(len(remaining))
+        print('##########################################')
+        assert False
+    placed = [x.copy() for x in placed]
+    remaining = remaining.copy()
+    # TODO: what if there's more than one way a tile could work?
+    oriented_tiles = tile.works(left, top)
+    if oriented_tile:
+        placed[-1].append(oriented_tile)
+        remaining.remove(tile)
+        return placed, remaining
+
+
 def backtrack(edge2tile, placed_init, remaining_init, width=3):
+    if placed_len(placed_init) + len(remaining_init) != width * width:
+        print('oh no')
+        assert False
     if len(remaining_init) == 0:
         return placed_init
     print_placed(placed_init)
@@ -115,14 +140,10 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
         placed.append([])
     top, left = get_top_left(placed, remaining)
     for tile in get_candidates(edge2tile, remaining, top, left):
-        placed_x = placed.copy()
-        remaining_x = remaining.copy()
-        # TODO: what if there's more than one way a tile could work?
-        oriented_tile = tile.works(left, top)
-        if oriented_tile:
-            placed_x[-1].append(oriented_tile)
-            remaining_x.remove(tile)
-            ret =  backtrack(edge2tile, placed_x, remaining_x, width=3)
+        result = try_tile(placed, remaining, top, left, tile, width)
+        if result:
+            new_placed, new_remaining = result
+            ret = backtrack(edge2tile, new_placed, new_remaining, width=width)
             if ret is not None:
                 return ret
     # unnecessary but you know

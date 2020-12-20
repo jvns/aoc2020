@@ -168,11 +168,6 @@ def backtrack(edge2tile, placed_init, remaining_init, width=3):
 def part1(input):
     all_tiles = dict(parse_tile(t) for t in input.split("\n\n"))
     edge2tile = make_edge2tile(all_tiles)
-
-    print(sum(1 for _, x in edge2tile.items(): if len(x) >= 2))
-        if len(x) >= 2:
-            print(x)
-    return
     final = backtrack(edge2tile, [[]], set(all_tiles.values()), width=3)
     print(len(final))
     for x in final:

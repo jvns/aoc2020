@@ -215,9 +215,9 @@ def part2(input):
     rows = np.concatenate(rows)
 
     monster = make_array("""
-^^^^^^^^^^^^^^^^^^^#^^^^
-^#^^^^##^^^^##^^^^###^^^
-^^#^^#^^#^^#^^#^^#^^^^^^
+^^^^^^^^^^^^^^^^^^#^
+#^^^^##^^^^##^^^^###
+^#^^#^^#^^#^^#^^#^^^
     """)
 
     print('----')
@@ -226,18 +226,21 @@ def part2(input):
         print(''.join(x))
     print('----')
     print(rows.shape)
+    total = 0
     for i in range(len(rows)):
         for j in range(len(rows[0])):
-            for o in all_orientations():
+            for o in [Orientation(0, False)]:
+            #for o in all_orientations():
                 rowsss = rot(rows, o)
                 mons = np.full_like(rows, '^')
                 try:
                     mons[i:i+monster.shape[0],j:j+monster.shape[1]] = monster
                     count =  np.count_nonzero(mons == rot(rows, o))
                     if count == 15:
-                        print(count, i, j, o)
+                        total += 1
                 except:
                     pass
+    print(total)
     #print(monster)
 
 

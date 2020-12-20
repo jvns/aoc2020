@@ -30,10 +30,10 @@ class Tile:
         edges = (top, right, bottom, left)
         return Tile(edges, num, Orientation(0, False))
 
-    def edges(self):
-        normal = self.edges
-        flipped = [str(reversed(x)) for x in normal]
-        return flipped + normal
+    def possible_edges(self):
+        print(self.edges)
+        flipped = [str(reversed(x)) for x in self.edges]
+        return flipped + list(self.edges)
 
     def oriented_edges(self):
         edges = rotate(self.edges, self.orientation.rotation)
@@ -83,12 +83,12 @@ class Tile:
 def parse_tile(tile):
     lines = tile.strip().split('\n')
     num = int(lines[0][5:-1])
-    return (num, Tile(num, lines[1:]))
+    return (num, Tile.create(num, lines[1:]))
 
 def make_edge2tile(all_tiles):
     edge2tile = defaultdict(set)
     for num, tile in all_tiles.items():
-        for e in tile.edges():
+        for e in tile.possible_edges():
             edge2tile[e].add(num)
     return edge2tile
 

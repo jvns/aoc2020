@@ -59,11 +59,14 @@ class Circle:
             x = x.next
         return ''.join(items)
 
-def part1(input):
+def part2(input):
     nums = [int(x) for x in input]
     nums = nums + list(range(max(nums)+1, 1000 * 1000  +1))
     circle = Circle.create(nums)
-    for i in range(100):
+    for i in range(10000000):
         circle.step()
-    print(circle.result())
-part1(sys.stdin.read().strip())
+    x = circle.items[1]
+    print (x.next.value, x.next.next.value)
+    print (x.next.value * x.next.next.value)
+
+part2(sys.stdin.read().strip())
